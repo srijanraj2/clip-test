@@ -1,0 +1,23 @@
+name: Test YouTube download
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg
+          pip install -U yt-dlp
+
+      - name: Try downloading a 10 second slice
+        run: |
+          yt-dlp --download-sections "*0-10" -f "best[height<=480]" -o "slice.%(ext)s" "https://www.youtube.com/watch?v=jNQXAC9IVRw" && echo "RESULT: DOWNLOAD WORKED" || echo "RESULT: DOWNLOAD BLOCKED"
+          ls -la
+
+      - name: Try cutting with ffmpeg
+        run: |
+          if ls slice.* 1> /dev/null 2>&1; then ffmpeg -y -i slice.* -t 5 out.mp4 && echo "RESULT: CLIP WORKED"; else echo "RESULT: NO FILE TO CLIP"; fi
